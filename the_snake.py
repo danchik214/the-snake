@@ -36,79 +36,113 @@ SPEED = 20
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
 # Заголовок окна игрового поля:
-pygame.display.set_caption('Змейка')
+pygame.display.set_caption("Змейка")
 
 # Настройка времени:
 clock = pygame.time.Clock()
 
 
 # Тут опишите все классы игры.
-class GameObject():
-    position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-    def __init__(self, position, body_color):
+class GameObject:
+    """Класс GameObject является основным родительским классом для других
+    игровых классов.
+    """
+
+    position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+
+    def __init__(self, position=None, body_color=None):
+        if position is None:
+            position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.position = position
         self.body_color = body_color
 
     def draw(self):
+        """Метод для отрисовки объектов.
+        В данном классе является заглушкой,
+        для будущего переопределения в подклассах.
+        """
+
         pass
-        
+
 
 class BoardItem(GameObject):
+    """Класс BoardItem является общим родительским классом для объектов,
+    по типу яблока и бомбы.
+    """
+
     def __init__(self, position=None, body_color=None):
         super().__init__(position or (0, 0), body_color)
         if position is None:
             self.randomize_position()
 
-    def randomize_position(self, forbidden=None):     
+    def randomize_position(self, forbidden=None):
+        """Метод для случайного определения позиции на игровом поле."""
+
         forbidden = forbidden or []
         while True:
             new_pos = (
                 randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+                randint(0, GRID_HEIGHT - 1) * GRID_SIZE,
             )
             if new_pos not in forbidden:
                 self.position = new_pos
                 break
 
     def draw(self):
+        """Метод для отрисовки объектов на игровом поле."""
+
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
 
 class Apple(BoardItem):
+    """Класс служит для определения цвета яблока на игровом поле."""
+
     def __init__(self, position=None):
         super().__init__(position, APPLE_COLOR)
 
 
 class Bomb(BoardItem):
+    """Класс служит для определения цвета бомбы на игровом поле."""
+
     def __init__(self, position=None):
         super().__init__(position, BOMB_COLOR)
 
 
 class Snake(GameObject):
+    """Класс отвечает за объект 'Змейка' на игровом поле.
+    Содержит в себе координаты начальной позиции змейки,
+    длину змейки, направление движения, цвет.
+    """
+
     possible_direction = [UP, DOWN, LEFT, RIGHT]
+
     def __init__(self, position=None, body_color=SNAKE_COLOR):
         if position is None:
-                    position = (0, 0)
+            position = (0, 0)
         super().__init__(position, body_color)
         self.length = 1
         self.positions = [position]
         self.direction = RIGHT
         self.next_direction = None
         self.body_color = SNAKE_COLOR
-        self.last_positions  = []
+        self.last_positions = []
 
     def get_head_position(self):
+        """Метод для получения координат головы змейки."""
+
         return self.positions[0]
 
-    def move(self):     
+    def move(self):
+        """Метод реализует свдиг змейки на одну ячейку."""
+
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
 
         new_position = (
             (head_x + dx * GRID_SIZE) % SCREEN_WIDTH,
-            (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
+            (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT,
         )
 
         self.positions.insert(0, new_position)
@@ -116,8 +150,12 @@ class Snake(GameObject):
             self.last_positions.append(self.positions.pop())
 
     def draw(self):
+        """Метод для отрисовки змейки на игровом поле и
+        затирания последнего сегмента змейки.
+        """
+
         for position in self.positions[:-1]:
-            rect = (pygame.Rect(position, (GRID_SIZE, GRID_SIZE)))
+            rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
@@ -134,6 +172,8 @@ class Snake(GameObject):
         self.last_positions.clear()
 
     def shrink(self, amount=2):
+        """Метод служит для сокращеия змейки."""
+
         if len(self.positions) <= 2:
             amount = 1
 
@@ -143,23 +183,26 @@ class Snake(GameObject):
             self.last_positions.append(self.positions.pop())
 
     def reset(self):
+        """Метод реализует очистку игрового поля и объектов."""
+
         screen.fill(BOARD_BACKGROUND_COLOR)
         self.length = 1
-        self.positions = [(SCREEN_WIDTH//2, SCREEN_HEIGHT//2)]
+        self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
         self.direction = choice(self.possible_direction)
         self.next_direction = None
         self.last_positions.clear()
 
-    # Метод обновления направления после нажатия на кнопку
     def update_direction(self):
+        """Метод обновления направления после нажатия на кнопку."""
+
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
 
-
-# Функция обработки действий пользователя
 def handle_keys(game_object):
+    """Функция обработки действий пользователя."""
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -196,21 +239,27 @@ def main():
         head = snake.get_head_position()
         if head == apple.position:
             snake.length += 1
-            apple.randomize_position(forbidden=snake.positions + [bomb.position])
+            apple.randomize_position(
+                forbidden=snake.positions + [bomb.position]
+            )
         if head == bomb.position:
             snake.shrink(2)
-            bomb.randomize_position(forbidden=snake.positions + [apple.position])
+            bomb.randomize_position(
+                forbidden=snake.positions + [apple.position]
+            )
         if head in snake.positions[1:]:
             snake.reset()
-            apple.randomize_position(forbidden=snake.positions + [bomb.position])
-            bomb.randomize_position(forbidden=snake.positions + [apple.position])
+            apple.randomize_position(
+                forbidden=snake.positions + [bomb.position]
+            )
+            bomb.randomize_position(
+                forbidden=snake.positions + [apple.position]
+            )
         snake.draw()
         apple.draw()
         bomb.draw()
         pygame.display.update()
-        
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
