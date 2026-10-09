@@ -49,7 +49,7 @@ class GameObject():
         self.position = position
         self.body_color = body_color
 
-    def draw():
+    def draw(self):
         pass
         
 
@@ -68,7 +68,7 @@ class BoardItem(GameObject):
             )
             if new_pos not in forbidden:
                 self.position = new_pos
-                return
+                break
 
     def draw(self):
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
@@ -89,11 +89,11 @@ class Bomb(BoardItem):
 class Snake(GameObject):
     possible_direction = [UP, DOWN, LEFT, RIGHT]
     def __init__(self, position=None, body_color=SNAKE_COLOR):
-        super().__init__(position, body_color)
         if position is None:
-            position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+                    position = (0, 0)
+        super().__init__(position, body_color)
         self.length = 1
-        self.positions = [(0, 0)]
+        self.positions = [position]
         self.direction = RIGHT
         self.next_direction = None
         self.body_color = SNAKE_COLOR
@@ -142,7 +142,7 @@ class Snake(GameObject):
         while len(self.positions) > self.length:
             self.last_positions.append(self.positions.pop())
 
-    def reset(self, screen):
+    def reset(self):
         screen.fill(BOARD_BACKGROUND_COLOR)
         self.length = 1
         self.positions = [(SCREEN_WIDTH//2, SCREEN_HEIGHT//2)]
@@ -183,6 +183,9 @@ def main():
     apple = Apple()
     bomb = Bomb()
 
+    apple.randomize_position(forbidden=snake.positions)
+    bomb.randomize_position(forbidden=snake.positions + [apple.position])
+
     while True:
         clock.tick(SPEED)
 
@@ -198,7 +201,9 @@ def main():
             snake.shrink(2)
             bomb.randomize_position(forbidden=snake.positions + [apple.position])
         if head in snake.positions[1:]:
-            snake.reset(screen)
+            snake.reset()
+            apple.randomize_position(forbidden=snake.positions + [bomb.position])
+            bomb.randomize_position(forbidden=snake.positions + [apple.position])
         snake.draw()
         apple.draw()
         bomb.draw()
