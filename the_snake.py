@@ -61,7 +61,6 @@ class GameObject:
         В данном классе является заглушкой,
         для будущего переопределения в подклассах.
         """
-
         pass
 
 
@@ -77,7 +76,6 @@ class BoardItem(GameObject):
 
     def randomize_position(self, forbidden=None):
         """Метод для случайного определения позиции на игровом поле."""
-
         forbidden = forbidden or []
         while True:
             new_pos = (
@@ -90,7 +88,6 @@ class BoardItem(GameObject):
 
     def draw(self):
         """Метод для отрисовки объектов на игровом поле."""
-
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
@@ -131,12 +128,10 @@ class Snake(GameObject):
 
     def get_head_position(self):
         """Метод для получения координат головы змейки."""
-
         return self.positions[0]
 
     def move(self):
         """Метод реализует свдиг змейки на одну ячейку."""
-
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
 
@@ -153,7 +148,6 @@ class Snake(GameObject):
         """Метод для отрисовки змейки на игровом поле и
         затирания последнего сегмента змейки.
         """
-
         for position in self.positions[:-1]:
             rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, self.body_color, rect)
@@ -173,7 +167,6 @@ class Snake(GameObject):
 
     def shrink(self, amount=2):
         """Метод служит для сокращеия змейки."""
-
         if len(self.positions) <= 2:
             amount = 1
 
@@ -184,7 +177,6 @@ class Snake(GameObject):
 
     def reset(self):
         """Метод реализует очистку игрового поля и объектов."""
-
         screen.fill(BOARD_BACKGROUND_COLOR)
         self.length = 1
         self.positions = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
@@ -194,7 +186,6 @@ class Snake(GameObject):
 
     def update_direction(self):
         """Метод обновления направления после нажатия на кнопку."""
-
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
@@ -202,7 +193,6 @@ class Snake(GameObject):
 
 def handle_keys(game_object):
     """Функция обработки действий пользователя."""
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -219,6 +209,7 @@ def handle_keys(game_object):
 
 
 def main():
+    """Запускает основной игровой цикл змейки."""
     # Инициализация PyGame:
     pygame.init()
     # Тут нужно создать экземпляры классов.
