@@ -48,12 +48,8 @@ class GameObject:
     игровых классов.
     """
 
-    position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-
     def __init__(self, position=None, body_color=None):
-        if position is None:
-            position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-        self.position = position
+        self.position = position or (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.body_color = body_color
 
     def draw(self):
@@ -64,7 +60,6 @@ class GameObject:
         raise NotImplementedError(
             f'Метод draw не реализован в классе {type(self).__name__}'
         )
-        pass
 
 
 class BoardItem(GameObject):
@@ -72,9 +67,9 @@ class BoardItem(GameObject):
     по типу яблока и бомбы.
     """
 
-    def __init__(self, position=None, body_color=None):
-        super().__init__(position or (0, 0), body_color)
-        self.randomize_position()
+    def __init__(self, body_color=None, forbidden=None):
+        super().__init__(body_color=body_color)
+        self.randomize_position(forbidden or [])
 
     def randomize_position(self, forbidden=None):
         """Метод для случайного определения позиции на игровом поле."""
@@ -97,15 +92,15 @@ class BoardItem(GameObject):
 class Apple(BoardItem):
     """Класс служит для определения цвета яблока на игровом поле."""
 
-    def __init__(self, position=None):
-        super().__init__(position, APPLE_COLOR)
+    def __init__(self, forbidden=None):
+        super().__init__(body_color=APPLE_COLOR, forbidden=forbidden)
 
 
 class Bomb(BoardItem):
     """Класс служит для определения цвета бомбы на игровом поле."""
 
-    def __init__(self, position=None):
-        super().__init__(position, BOMB_COLOR)
+    def __init__(self, forbidden=None):
+        super().__init__(body_color=BOMB_COLOR, forbidden=forbidden)
 
 
 class Snake(GameObject):
@@ -207,11 +202,8 @@ def main():
     pg.init()
     # Тут нужно создать экземпляры классов.
     snake = Snake()
-    apple = Apple()
-    bomb = Bomb()
-
-    apple.randomize_position(forbidden=snake.positions)
-    bomb.randomize_position(forbidden=snake.positions + [apple.position])
+    apple = Apple(forbidden=snake.positions)
+    bomb = Bomb(forbidden=snake.positions + [apple.position])
 
     while True:
         clock.tick(SPEED)
